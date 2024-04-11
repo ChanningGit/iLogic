@@ -1,0 +1,738 @@
+Sub Main()
+	
+	
+	Parameter("Double Door Center Assymetric Wireframe:1", "Opening_Height") = Opening_Height
+	Parameter("Double Door Center Assymetric Wireframe:1", "Transom_Height") = Transom_Height
+	UpdateParameters()
+	CheckDoorPos() 		'CHECK DOOR POSITION
+	DoorOpeningChk()	'CHECK DOOR TYPE BASED ON OPENING
+	'DoorHeightChk()		'CHECK TRANSOM HEIGHT (DOOR HEIGHT)
+	TransomChk()
+	
+	
+
+	iLogicVb.UpdateWhenDone = True
+
+	
+End Sub
+
+Sub UpdateParameters()
+	
+	
+	'************APPLY JAMB HEIGHTS**************
+	
+	Parameter("ENDURE45-Mullion DG_DRJMB_LFT:1", "EXT_LENGTH") = Opening_Height - 1
+	Parameter("ENDURE45-Mullion DG_DRJMB_RYT:1", "EXT_LENGTH") = Opening_Height - 1
+	Parameter("ENDURE-Pressure Bar Cover_001:1", "EXT_LENGTH") = Opening_Height - 0.5
+	Parameter("ENDURE45-Mullion Open DG_END VERTICAL_LFT:1", "EXT_LENGTH") = Opening_Height - 1
+	Parameter("ENDURE45-Mullion Open DG_END VERTICAL_RYT:1", "EXT_LENGTH") = Opening_Height - 1
+	Parameter("ENDURE-Pressure Bar_END_VERTICAL:1", "EXT_LENGTH") = Opening_Height - 1
+	Parameter("ENDURE45-Mullion DG_DRJMB_LFT:1", "TRANS_LOC") = Transom_Height
+	Parameter("ENDURE45-Mullion DG_DRJMB_RYT:1", "TRANS_LOC") = Transom_Height
+	
+	'Presssure Bar Cover on Wall side
+	Parameter("ENDURE-Pressure Bar Cover_LFT:1", "EXT_LENGTH") = Opening_Height - 1
+	Parameter("ENDURE-Pressure Bar Cover_RYT:1", "EXT_LENGTH") = Opening_Height - 1
+	
+	'************ APPLY TRACK HEIGHTS **************
+	'Parameter("ENDURE45-Track-No Ribs_VERTICAL:1", "EXT_LENGTH") = Opening_Height - 0.8040 * 2
+	Parameter("ENDURE45-Track-Supporting Ribs_WALLTRACK:1", "EXT_LENGTH") = Opening_Height - 0.8040 * 2
+	If Door_Pos = "Left" Then
+		' ***RYTJAMB***
+		Feature.IsActive("ENDURE45-Track-Supporting Ribs_WALLTRACK:1", "RYTJAMB") = False
+		' ***LFTJAMB***
+		Feature.IsActive("ENDURE45-Track-Supporting Ribs_WALLTRACK:1", "LFTJAMB") = True
+
+		Else If Door_Pos = "Right" Then
+		' ***RYTJAMB***
+		Feature.IsActive("ENDURE45-Track-Supporting Ribs_WALLTRACK:1", "RYTJAMB") = True
+		' ***LFTJAMB***
+		Feature.IsActive("ENDURE45-Track-Supporting Ribs_WALLTRACK:1", "LFTJAMB") = False
+	
+		Else If Door_Pos = "Center" Then
+		' ***RYTJAMB***
+		Feature.IsActive("ENDURE45-Track-Supporting Ribs_WALLTRACK:1", "RYTJAMB") = False
+		' ***LFTJAMB***
+		Feature.IsActive("ENDURE45-Track-Supporting Ribs_WALLTRACK:1", "LFTJAMB") = False
+	End If
+	
+	'***************** JAMB FILLER DIM
+	Parameter("ENDURE-Pressure Bar Jamb Filler_DR_JMB:1", "EXT_LENGTH") = Transom_Height + 5 / 8
+	
+	'******************* PRESSUREBAR AT TOP OF DOOR VERTICAL
+	Parameter("ENDURE-Pressure Bar_TOP_DR:1", "EXT_LENGTH") = Opening_Height - Transom_Height - 0.5 - 1.5 + 5 / 8
+	
+	
+	'*************** DOOR AREA DIMS *************************
+	
+	'DOOR TOP GLASS
+	Parameter("GlassTopDoor:1", "MOD_HEIGHT") = Opening_Height
+	Parameter("GlassTopDoor:1", "TRANS_POS") = Transom_Height + .75
+	Parameter("GlassTopDoor:1", "MOD_WIDTH") = Door_Opening + 1.5
+	
+	'DOOR HEAD DIM
+	Parameter("ENDURE45-Mullion Open DG_DR_HEAD:1", "EXT_LENGTH") = Door_Opening
+	Parameter("ENDURE-Pressure Bar Jamb Filler_DR_HEAD:1", "EXT_LENGTH") = Door_Opening - 1 / 32
+	Parameter("ENDURE-Pressure Bar Cover_DR_HEAD:1", "EXT_LENGTH") = Door_Opening - 1 / 32
+	Parameter("ENDURE45-Mullion Open DG_TOP_HORIZ:1", "EXT_LENGTH") = Door_Opening
+	Parameter("ENDURE-Pressure Bar_TOP_DR_HORIZ:1", "EXT_LENGTH") = Door_Opening - 1 / 32
+	
+	
+	'GASKETS @ DOOR AREA
+	Parameter("Main Gasket_DR_HEAD:1", "EXT_LENGTH") = Door_Opening
+	Parameter("Main Gasket_DR_HEAD_TOPGLASS:1", "EXT_LENGTH") = Opening_Height - Transom_Height - 0.5 - 1 + 5 / 8 - 1 + .1644
+	Parameter("Main Gasket_DR_JAMB:1", "EXT_LENGTH") = Opening_Height - .5425*2
+	
+	'TOP TRACK UPDATE
+	Parameter("ENDURE45-Track-Supporting Ribs_TOP:1", "EXT_LENGTH") = Ryt_Opening_Width + Left_Opening_Width + Door_Opening
+	GlassGeneration()
+
+		'WingGlassParametersLFT()
+		'WingGlassParametersRYT()
+	
+		
+	iLogicVb.UpdateWhenDone = True
+End Sub
+Sub SuppressLeftWing()
+		DisableRyt = False
+		DisableLft = True
+		'Left_Opening_Width = 2
+		'suppress left wing parts
+		
+		Component.IsActive("ENDURE45-Mullion Open DG_SILL_HORIZ_LFT:1") = False
+		Component.IsActive("ENDURE45-Mullion Open DG_SILL_HORIZ_LFT:2") = False
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_LFT:1") = False
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_LFT:2") = False
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_LFT:3") = False
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_LFT:4") = False
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:1") = False
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:3") = False
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:2") = False
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:4") = False
+		Component.IsActive("LftHeadGaskets") = False
+		Component.IsActive("LftSillGaskets") = False
+		Component.IsActive("ENDURE45-Support Channel_HEAD_LFT:1") = False
+		Component.IsActive("ENDURE45-Track-Supporting Ribs_SILL_HORIZ_LFT:1") = False
+		Component.IsActive("ENDURE45-Support Channel_SILL_LFT:1") = False
+		Component.IsActive("ENDURE45-Mullion DG_DRJMB_LFT:1") = False
+		Component.IsActive("LeftVerticalTrackGaskets") = False
+		Component.IsActive("ENDURE-Pressure Bar Cover_LFT:1") = False
+		Component.IsActive("ENDURE-Pressure Bar Cover_LFT:2") = False
+		Constraint.IsActive("Mate:291") = False
+
+
+		'Activate Right Wings Parts
+		Component.IsActive("ENDURE-Pressure Bar Cover_RYT:1") = True
+		Component.IsActive("ENDURE-Pressure Bar Cover_RYT:2") = True
+		Component.IsActive("ENDURE45-Mullion Open DG_SILL_HORIZ_RYT:1") = True
+		Component.IsActive("ENDURE45-Mullion Open DG_SILL_HORIZ_RYT:2") = True
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_RYT:1") = True
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_RYT:2") = True
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_RYT:4") = True
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_RYT:3") = True
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:1") = True
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:3") = True
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:2") = True
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:4") = True
+		Component.IsActive("RytHeadGaskets") = True
+		Component.IsActive("RytSillGaskets") = True
+		Component.IsActive("ENDURE45-Track-Supporting Ribs_SILL_HORIZ_RYT:1") = True
+		Component.IsActive("ENDURE45-Support Channel_HEAD_RYT:1") = True
+		Component.IsActive("ENDURE45-Support Channel_SILL_RYT:1") = True
+		Component.IsActive("ENDURE45-Mullion DG_DRJMB_RYT:1") = True
+		Component.IsActive("RightVerticalTrackGaskets") = True
+		Constraint.IsActive("Mate:293") = True
+		Constraint.IsActive("Mate:294") = True
+	
+		SuppressConnectorsLeft()
+		
+
+		
+	iLogicVb.UpdateWhenDone = True
+	Parameter.UpdateAfterChange = True
+
+	End Sub
+Sub SuppressRightWing()
+		DisableRyt = True
+		DisableLft = False
+		'Ryt_Opening_Width = 2
+		'suppress Right wing parts
+		Component.IsActive("ENDURE-Pressure Bar Cover_RYT:1") = False
+		Component.IsActive("ENDURE-Pressure Bar Cover_RYT:2") = False
+		Component.IsActive("ENDURE45-Mullion Open DG_SILL_HORIZ_RYT:1") = False
+		Component.IsActive("ENDURE45-Mullion Open DG_SILL_HORIZ_RYT:2") = False
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_RYT:1") = False
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_RYT:2") = False
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_RYT:4") = False
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_RYT:3") = False
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:1") = False
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:3") = False
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:2") = False
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:4") = False
+		Component.IsActive("RytHeadGaskets") = False
+		Component.IsActive("RytSillGaskets") = False	
+		Component.IsActive("ENDURE45-Track-Supporting Ribs_SILL_HORIZ_RYT:1") = False
+		Component.IsActive("ENDURE45-Support Channel_HEAD_RYT:1") = False
+		Component.IsActive("ENDURE45-Support Channel_SILL_RYT:1") = False
+		Component.IsActive("ENDURE45-Mullion DG_DRJMB_RYT:1") = False
+		Component.IsActive("RightVerticalTrackGaskets") = False
+		Constraint.IsActive("Mate:293") = False
+		Constraint.IsActive("Mate:294") = False
+	
+		
+
+		'Activate Left Wings Parts
+		
+		Component.IsActive("ENDURE45-Mullion Open DG_SILL_HORIZ_LFT:1") = True
+		Component.IsActive("ENDURE45-Mullion Open DG_SILL_HORIZ_LFT:2") = True
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_LFT:1") = True
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_LFT:2") = True
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_LFT:3") = True
+		Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_LFT:4") = True
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:1") = True
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:3") = True
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:2") = True
+		Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:4") = True
+		Component.IsActive("LftHeadGaskets") = True
+		Component.IsActive("LftSillGaskets") = True
+		Component.IsActive("ENDURE45-Support Channel_HEAD_LFT:1") = True
+		Component.IsActive("ENDURE45-Track-Supporting Ribs_SILL_HORIZ_LFT:1") = True
+		Component.IsActive("ENDURE45-Support Channel_SILL_LFT:1") = True
+		Component.IsActive("ENDURE45-Mullion DG_DRJMB_LFT:1") = True
+		Component.IsActive("LeftVerticalTrackGaskets") = True
+		Component.IsActive("ENDURE-Pressure Bar Cover_LFT:1") = True
+		Component.IsActive("ENDURE-Pressure Bar Cover_LFT:2") = True
+		Constraint.IsActive("Mate:291") = True
+		SuppressConnectorsRight()
+		
+		
+	iLogicVb.UpdateWhenDone = True
+	Parameter.UpdateAfterChange = True
+	
+	End Sub
+Sub ActivateAll()
+	DisableRyt = False
+	DisableLft = False
+	'Activate Left Wings Parts
+	
+	Component.IsActive("ENDURE45-Mullion Open DG_SILL_HORIZ_LFT:1") = True
+	Component.IsActive("ENDURE45-Mullion Open DG_SILL_HORIZ_LFT:2") = True
+	Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_LFT:1") = True
+	Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_LFT:2") = True
+	Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_LFT:3") = True
+	Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_LFT:4") = True
+	Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:1") = True
+	Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:3") = True
+	Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:2") = True
+	Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:4") = True
+	Component.IsActive("LftHeadGaskets") = True
+	Component.IsActive("LftSillGaskets") = True
+	Component.IsActive("ENDURE45-Support Channel_HEAD_LFT:1") = True
+	Component.IsActive("ENDURE45-Track-Supporting Ribs_SILL_HORIZ_LFT:1") = True
+	Component.IsActive("ENDURE45-Support Channel_SILL_LFT:1") = True
+	Component.IsActive("ENDURE45-Mullion DG_DRJMB_LFT:1") = True
+	Component.IsActive("LeftVerticalTrackGaskets") = True
+	Component.IsActive("ENDURE-Pressure Bar Cover_LFT:1") = True
+	Component.IsActive("ENDURE-Pressure Bar Cover_LFT:2") = True
+	
+	'Activate Right Wings Parts
+	Component.IsActive("ENDURE-Pressure Bar Cover_RYT:1") = True
+	Component.IsActive("ENDURE-Pressure Bar Cover_RYT:2") = True
+	Component.IsActive("ENDURE45-Mullion Open DG_SILL_HORIZ_RYT:1") = True
+	Component.IsActive("ENDURE45-Mullion Open DG_SILL_HORIZ_RYT:2") = True
+	Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_RYT:1") = True
+	Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_RYT:2") = True
+	Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_RYT:4") = True
+	Component.IsActive("ENDURE-Pressure Bar_SILL_HORIZ_RYT:3") = True
+	Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:1") = True
+	Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:3") = True
+	Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:2") = True
+	Component.IsActive("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:4") = True
+	Component.IsActive("RytHeadGaskets") = True
+	Component.IsActive("RytSillGaskets") = True
+	Component.IsActive("ENDURE45-Track-Supporting Ribs_SILL_HORIZ_RYT:1") = True
+	Component.IsActive("ENDURE45-Support Channel_HEAD_RYT:1") = True
+	Component.IsActive("ENDURE45-Support Channel_SILL_RYT:1") = True
+	Component.IsActive("ENDURE45-Mullion DG_DRJMB_RYT:1") = True
+	Component.IsActive("RightVerticalTrackGaskets") = True
+	ActivateRightCons()
+	ActivateLeftCons()
+	
+	iLogicVb.UpdateWhenDone = True
+	Parameter.UpdateAfterChange = True
+	
+End Sub
+Sub CheckDoorPos()
+	GlassGeneration()
+	
+	Select Case Door_Pos
+		
+		Case "Center"
+			
+			ActivateAll()
+			Centered = True
+			If UnEqual_Sides = False Then
+				EnableDorPos = True
+				Parameter("Double Door Center Assymetric Wireframe:1", "LFTWING_MOD") = (Opening_Width - Door_Opening) / 2
+				Parameter("Double Door Center Assymetric Wireframe:1", "RYTWING_MOD") = (Opening_Width - Door_Opening) / 2
+				Left_Opening_Width = (Opening_Width - Door_Opening) / 2
+				Ryt_Opening_Width = (Opening_Width - Door_Opening) / 2
+				
+				Parameter("ENDURE45-Track-Supporting Ribs_TOP:1", "EXT_LENGTH") = Ryt_Opening_Width + Left_Opening_Width + Door_Opening
+				
+				'***********LEFT PARTS**************
+				Parameter("ENDURE45-Mullion Open DG_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5
+				Parameter("ENDURE-Pressure Bar_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5 - 1 / 8
+				Parameter("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5 - 1 / 32
+				Parameter("Main Gasket_DR_SILL_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5
+				Parameter("ENDURE45-Track-Supporting Ribs_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 1 / 8
+				Parameter("ENDURE45-Support Channel_SILL_LFT:1", "EXT_LENGTH") = Left_Opening_Width -4 - 3.5
+				Parameter("ENDURE45-Support Channel_HEAD_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 4 - 3.5
+
+				'***********RIGHT PARTS**************
+				Parameter("ENDURE45-Mullion Open DG_SILL_HORIZ_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5
+				Parameter("ENDURE-Pressure Bar_SILL_HORIZ_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5 - 1 / 8
+				Parameter("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5 - 1 / 32
+				Parameter("Main Gasket_DR_SILL_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5
+				Parameter("ENDURE45-Track-Supporting Ribs_SILL_HORIZ_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 1 / 8
+				Parameter("ENDURE45-Support Channel_SILL_RYT:1", "EXT_LENGTH") =Ryt_Opening_Width -4 - 3.5
+				Parameter("ENDURE45-Support Channel_HEAD_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 4 - 3.5
+				
+				Equal_sides = True
+				DisableRyt = False
+				DisableLft = False
+				
+			Else If UnEqual_Sides = True Then
+				
+				EnableDorPos = False
+				Door_Pos = "Center"
+				Parameter("ENDURE45-Track-Supporting Ribs_TOP:1", "EXT_LENGTH") = Ryt_Opening_Width + Left_Opening_Width + Door_Opening 'Top Track Update
+				Opening_Width = Ryt_Opening_Width + Door_Opening + Left_Opening_Width
+				Parameter("Double Door Center Assymetric Wireframe:1", "LFTWING_MOD") = Left_Opening_Width
+				Parameter("Double Door Center Assymetric Wireframe:1", "RYTWING_MOD") = Ryt_Opening_Width
+				
+				'***********LEFT PARTS**************
+				Parameter("ENDURE45-Mullion Open DG_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5
+				Parameter("ENDURE-Pressure Bar_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5 - 1 / 8
+				Parameter("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5 - 1 / 32
+				Parameter("Main Gasket_DR_SILL_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5
+				Parameter("ENDURE45-Track-Supporting Ribs_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 1 / 4
+				Parameter("ENDURE45-Support Channel_SILL_LFT:1", "EXT_LENGTH") = Left_Opening_Width -4 - 3.5
+				Parameter("ENDURE45-Support Channel_HEAD_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 4 - 3.5
+				
+
+				'***********RIGHT PARTS**************
+				Parameter("ENDURE45-Mullion Open DG_SILL_HORIZ_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5
+				Parameter("ENDURE-Pressure Bar_SILL_HORIZ_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5 - 1 / 8
+				Parameter("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5 - 1 / 32
+				Parameter("Main Gasket_DR_SILL_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5
+				Parameter("ENDURE45-Track-Supporting Ribs_SILL_HORIZ_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 1 / 4
+				Parameter("ENDURE45-Support Channel_SILL_RYT:1", "EXT_LENGTH") =Ryt_Opening_Width -4 - 3.5
+				Parameter("ENDURE45-Support Channel_HEAD_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 4 - 3.5
+								
+				Equal_sides = False
+				DisableRyt = True
+				DisableLft = True		
+			End If
+			'Door_Pos = Door_Pos
+			UpdateParameters()
+			
+			'END VERTICAL ARE NON JAMB
+				' ***JAMB CONDITION***
+				Feature.IsActive("ENDURE45-Mullion Open DG_END VERTICAL_RYT:1", "JAMB CONDITION") = False
+				' ***BotHole***
+				Feature.IsActive("ENDURE45-Mullion Open DG_END VERTICAL_RYT:1", "BotHole") = True
+					' ***JAMB CONDITION***
+				Feature.IsActive("ENDURE45-Mullion Open DG_END VERTICAL_LFT:1", "JAMB CONDITION") = False
+				' ***BotHole***
+				Feature.IsActive("ENDURE45-Mullion Open DG_END VERTICAL_LFT:1", "BotHole") = True
+			
+		Case "Left"
+			UpdateParameters()	
+			Left_Opening_Width = 2
+			If Ryt_Opening_Width = 2 Then
+				Ryt_Opening_Width = 120
+			End If
+			
+			Opening_Width = Ryt_Opening_Width + Door_Opening + Left_Opening_Width
+			Centered = False
+			DisableRyt = False
+			DisableLft = True
+			Equal_sides = False
+				
+			Parameter("Double Door Center Assymetric Wireframe:1", "LFTWING_MOD") = Left_Opening_Width
+			Parameter("Double Door Center Assymetric Wireframe:1", "RYTWING_MOD") = Ryt_Opening_Width
+			Parameter("ENDURE45-Track-Supporting Ribs_TOP:1", "EXT_LENGTH") = Ryt_Opening_Width + Left_Opening_Width + Door_Opening
+			
+			'assign non compromising length ON LEFT PARTS BEFORE SUPPRESSION
+			'***********LEFT PARTS**************
+				Parameter("ENDURE45-Mullion Open DG_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5
+				Parameter("ENDURE-Pressure Bar_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5 - 1 / 8
+				Parameter("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5 - 1 / 32
+				Parameter("Main Gasket_DR_SILL_LFT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5
+				Parameter("ENDURE45-Track-Supporting Ribs_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Ryt_Opening_Width - 1 / 4
+				Parameter("ENDURE45-Support Channel_SILL_LFT:1", "EXT_LENGTH") = Ryt_Opening_Width - 4 - 3.5
+				Parameter("ENDURE45-Support Channel_HEAD_LFT:1", "EXT_LENGTH") = Ryt_Opening_Width - 4 - 3.5
+				
+				' ***JAMB CONDITION***
+				Feature.IsActive("ENDURE45-Mullion Open DG_END VERTICAL_RYT:1", "JAMB CONDITION") = False
+				' ***BotHole***
+				Feature.IsActive("ENDURE45-Mullion Open DG_END VERTICAL_RYT:1", "BotHole") = True
+								
+				'***********RIGHT PARTS**************
+				Parameter("ENDURE45-Mullion Open DG_SILL_HORIZ_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5
+				Parameter("ENDURE-Pressure Bar_SILL_HORIZ_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5 - 1 / 8
+				Parameter("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5 - 1 / 32
+				Parameter("Main Gasket_DR_SILL_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 2 - 1.5
+				Parameter("ENDURE45-Track-Supporting Ribs_SILL_HORIZ_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 1 / 4
+				Parameter("ENDURE45-Support Channel_SILL_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 4 - 3.5
+				Parameter("ENDURE45-Support Channel_HEAD_RYT:1", "EXT_LENGTH") = Ryt_Opening_Width - 4 - 3.5
+				' ***JAMB CONDITION***
+				Feature.IsActive("ENDURE45-Mullion Open DG_END VERTICAL_LFT:1", "JAMB CONDITION") = True
+				' ***BotHole***
+				Feature.IsActive("ENDURE45-Mullion Open DG_END VERTICAL_LFT:1", "BotHole") = False
+			UpdateParameters()
+			SuppressLeftWing()
+		
+					
+		Case "Right"
+			UpdateParameters()	
+			Ryt_Opening_Width = 2
+			If Left_Opening_Width = 2 Then
+				Left_Opening_Width = 120
+			End If
+			Opening_Width = Left_Opening_Width + Door_Opening + Ryt_Opening_Width
+			Centered = False
+			DisableRyt = True
+			DisableLft = False
+			Equal_sides = False
+						
+			Parameter("Double Door Center Assymetric Wireframe:1", "RYTWING_MOD") = Ryt_Opening_Width
+			Parameter("Double Door Center Assymetric Wireframe:1", "LFTWING_MOD") = Left_Opening_Width
+			Parameter("ENDURE45-Track-Supporting Ribs_TOP:1", "EXT_LENGTH") = Ryt_Opening_Width + Left_Opening_Width + Door_Opening
+			
+			
+			'assign non compromising length RIGHT PARTS BEFORE SUPPRESSION
+			
+			'***********LEFT PARTS**************
+				Parameter("ENDURE45-Mullion Open DG_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5
+				Parameter("ENDURE-Pressure Bar_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5 - 1 / 8
+				Parameter("ENDURE-Pressure Bar Cover_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5 - 1 / 32
+				Parameter("Main Gasket_DR_SILL_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5
+				Parameter("ENDURE45-Track-Supporting Ribs_SILL_HORIZ_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 1 / 4
+				Parameter("ENDURE45-Support Channel_SILL_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 4 - 3.5
+				Parameter("ENDURE45-Support Channel_HEAD_LFT:1", "EXT_LENGTH") = Left_Opening_Width - 4 - 3.5
+					' ***JAMB CONDITION***
+				Feature.IsActive("ENDURE45-Mullion Open DG_END VERTICAL_LFT:1", "JAMB CONDITION") = False
+				' ***BotHole***
+				Feature.IsActive("ENDURE45-Mullion Open DG_END VERTICAL_LFT:1", "BotHole") = True
+				
+				
+				'***********RIGHT PARTS**************
+				Parameter("ENDURE45-Mullion Open DG_SILL_HORIZ_RYT:1", "EXT_LENGTH") =  Left_Opening_Width - 2 - 1.5
+				Parameter("ENDURE-Pressure Bar_SILL_HORIZ_RYT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5 - 1 / 8
+				Parameter("ENDURE-Pressure Bar Cover_SILL_HORIZ_RYT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5 - 1 / 32
+				Parameter("Main Gasket_DR_SILL_RYT:1", "EXT_LENGTH") = Left_Opening_Width - 2 - 1.5
+				Parameter("ENDURE45-Track-Supporting Ribs_SILL_HORIZ_RYT:1", "EXT_LENGTH") =  Left_Opening_Width - 1 / 4
+				Parameter("ENDURE45-Support Channel_SILL_RYT:1", "EXT_LENGTH") = Left_Opening_Width -4 - 3.5
+				Parameter("ENDURE45-Support Channel_HEAD_RYT:1", "EXT_LENGTH") = Left_Opening_Width -4 - 3.5
+				' ***JAMB CONDITION***
+				Feature.IsActive("ENDURE45-Mullion Open DG_END VERTICAL_RYT:1", "JAMB CONDITION") = True
+				' ***BotHole***
+				Feature.IsActive("ENDURE45-Mullion Open DG_END VERTICAL_RYT:1", "BotHole") = False
+			UpdateParameters()	
+			SuppressRightWing()
+		
+			
+		End Select
+	End Sub
+Sub DoorOpeningChk()
+	'CHECK DOOR OPENING
+	If Custom_Door = False Then
+	Door_Opening = 72
+	Parameter("Double Door Center Assymetric Wireframe:1", "Door_Opening") = Door_Opening
+	Else If Custom_Door = True Then
+	Parameter("Double Door Center Assymetric Wireframe:1", "Door_Opening") = Door_Opening
+	End If
+	UpdateParameters()
+End Sub
+Sub SuppressConnectorsLeft	()
+	
+	'BotLeft Conncetors
+	Component.IsActive("ENDURE45-Shear Block:8") = False
+	Component.IsActive("ENDURE45- Shear Block Mount:8") = False
+	Component.IsActive("ENDURE45- Shear Block Mount:11") = False
+	Component.IsActive("ENDURE45-Shear Block:11") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:22") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:23") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:41") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:42") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:43") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:44") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:16") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:17") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:29") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:30") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:31") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:32") = False
+	
+	'Top Left Connectors
+	Component.IsActive("ENDURE45- Shear Block Mount:12") = False
+	Component.IsActive("ENDURE45-Shear Block:12") = False
+	Component.IsActive("ENDURE45-Shear Block:5") = False
+	Component.IsActive("ENDURE45- Shear Block Mount:5") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:24") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:25") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:45") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:46") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:47") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:48") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:6") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:7") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:23") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:24") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:6") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:7") = False
+	
+	ActivateRightCons() 'Show Right COns
+	
+End Sub
+Sub SuppressConnectorsRight()
+	'Bot Right Conncetors
+	Component.IsActive("ENDURE45- Shear Block Mount:7") = False
+	Component.IsActive("ENDURE45-Shear Block:7") = False
+	Component.IsActive("ENDURE45-Shear Block:9") = False
+	Component.IsActive("ENDURE45- Shear Block Mount:9") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:18") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:19") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:33") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:34") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:35") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:36") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:14") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:15") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:25") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:26") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:27") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:28") = False
+	
+	'Top Right Connectors
+	Component.IsActive("ENDURE45-Shear Block:10") = False
+	Component.IsActive("ENDURE45- Shear Block Mount:10") = False
+	Component.IsActive("ENDURE45- Shear Block Mount:6") = False
+	Component.IsActive("ENDURE45-Shear Block:6") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:20") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:21") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:37") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:38") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:39") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:40") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:1") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:3") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:15") = False
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:16") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:12") = False
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:13") = False
+	
+	ActivateLeftCons() 'Show Left Cons
+	
+End Sub
+Sub ActivateRightCons()
+	'TR COns
+	Component.IsActive("ENDURE45-Shear Block:10") = True
+	Component.IsActive("ENDURE45- Shear Block Mount:10") = True
+	Component.IsActive("ENDURE45- Shear Block Mount:6") = True
+	Component.IsActive("ENDURE45-Shear Block:6") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:20") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:21") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:37") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:38") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:39") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:40") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:1") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:3") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:15") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:16") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:12") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:13") = True
+	
+	'BR Cons
+	Component.IsActive("ENDURE45- Shear Block Mount:7") = True
+	Component.IsActive("ENDURE45-Shear Block:7") = True
+	Component.IsActive("ENDURE45-Shear Block:9") = True
+	Component.IsActive("ENDURE45- Shear Block Mount:9") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:18") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:19") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:33") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:34") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:35") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:36") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:14") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:15") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:25") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:26") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:27") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:28") = True
+	
+End Sub
+Sub ActivateLeftCons()
+	'BL Cons
+	Component.IsActive("ENDURE45-Shear Block:8") = True
+	Component.IsActive("ENDURE45- Shear Block Mount:8") = True
+	Component.IsActive("ENDURE45- Shear Block Mount:11") = True
+	Component.IsActive("ENDURE45-Shear Block:11") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:22") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:23") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:41") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:42") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:43") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:44") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:16") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:17") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:29") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:30") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:31") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:32") = True
+	
+	'TL Cons
+	Component.IsActive("ENDURE45- Shear Block Mount:12") = True
+	Component.IsActive("ENDURE45-Shear Block:12") = True
+	Component.IsActive("ENDURE45-Shear Block:5") = True
+	Component.IsActive("ENDURE45- Shear Block Mount:5") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:24") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:25") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:45") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:46") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:47") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:48") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:6") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:7") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:23") = True
+	Component.IsActive("02-FS0007S-#8X0.5 Flat Phillips Head Self Tap:24") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:6") = True
+	Component.IsActive("03-No10x.75-Hex Head Drilling Screws for Metal:7") = True
+
+End Sub
+Sub DoorHeightChk()
+	If Transom_Height >= Opening_Height Then
+		SuppressDoorHead()
+	Else If Transom_Height < Opening_Height Then
+		UnSuppressDoorHead()
+	End If
+End Sub
+Sub SuppressDoorHead()
+	Component.IsActive("ENDURE-Pressure Bar Jamb Filler_DR_HEAD:1") = False
+	Component.IsActive("ENDURE-Pressure Bar Jamb Filler_DR_HEAD:2") = False
+	Component.IsActive("ENDURE45-Mullion Open DG_DR_HEAD:1") = False
+	Component.IsActive("ENDURE-Pressure Bar Cover_DR_HEAD:1") = False
+	Component.IsActive("ENDURE-Pressure Bar Cover_DR_HEAD:2") = False
+End Sub
+Sub UnSuppressDoorHead()
+	Component.IsActive("ENDURE-Pressure Bar Jamb Filler_DR_HEAD:1") = True
+	Component.IsActive("ENDURE-Pressure Bar Jamb Filler_DR_HEAD:2") = True
+	Component.IsActive("ENDURE45-Mullion Open DG_DR_HEAD:1") = True
+	Component.IsActive("ENDURE-Pressure Bar Cover_DR_HEAD:1") = True
+	Component.IsActive("ENDURE-Pressure Bar Cover_DR_HEAD:2") = True
+End Sub
+Sub TransomChk()
+	If Int_Transom = True Then
+		GlassGap = .7045
+
+
+	Else If Int_Transom = False Then
+		GlassGap = 1 / 8
+
+	End If
+	UpdateParameters()
+End Sub
+Sub SingleGlassFull_LFT()
+	Patterns.Delete("LeftGlassPattern")
+	Component.IsActive("Left Double Glass Full") = True
+	Parameter("GlassFull_LFT:1", "Glass_Height") = Opening_Height - 2 * 1.6022 
+	Parameter("GlassFull_LFT:1", "Glass_Width") = Left_Opening_Width - (1.6022 + 1.1022)
+End Sub
+Sub SingleGlassFull_RYT()
+	Patterns.Delete("RytGlassPattern")
+	Component.IsActive("Right Double Glass Full") = True
+	Parameter("GlassFull_RYT:1", "Glass_Height") = Opening_Height - 2 * 1.6022 
+	Parameter("GlassFull_RYT:1", "Glass_Width") = Ryt_Opening_Width - (1.6022 + 1.1022)
+End Sub
+Sub MultipleGlassFull_LFT()
+	Glass_Opening_LFT = Left_Opening_Width - (1.4772 + 0.9772) - 1 / 8
+	Dim decGlassOpening As Decimal
+	Dim NoOfPanels As Integer
+	NoOfPanelsLFT = 1
+	decGlassOpening = Glass_Opening_LFT
+	NoOfPanels = NoOfPanelsLFT
+
+	Do While decGlassOpening / NoOfPanels >= MaxGlassWidth
+				NoOfPanels = NoOfPanels + 1
+	Loop
+	NoOfPanelsLFT = NoOfPanels
+	Parameter("GlassFull_LFT:1", "Glass_Width") = decGlassOpening / NoOfPanelsLFT - GlassGap
+
+	Panel_SpacingLFT = decGlassOpening / NoOfPanelsLFT
+	Dim rectPattern = Patterns.AddRectangular("LeftGlassPattern", "Left Double Glass Full", NoOfPanelsLFT, Panel_SpacingLFT, Nothing, "X Axis", columnNaturalDirection := True, rowCount := 1, rowOffset := 1.0 in, rowEntityName := "Y Axis", rowNaturalDirection := True)
+	
+	Parameter("Double Door Center Assymetric Wireframe:1", "intMULL_LFT") = Panel_SpacingLFT 'position of 1st intermediate mullion
+End Sub
+Sub MultipleGlassFull_RYT()
+	Glass_Opening_RYT = Ryt_Opening_Width - (1.4772 + 0.9772) -1 / 8
+	Dim decGlassOpening As Decimal
+	Dim NoOfPanels As Integer
+	NoOfPanelsRYT = 1
+	decGlassOpening = Glass_Opening_RYT
+	NoOfPanels = NoOfPanelsRYT
+
+	Do While decGlassOpening / NoOfPanels >= MaxGlassWidth
+				NoOfPanels = NoOfPanels + 1
+	Loop
+	NoOfPanelsRYT = NoOfPanels
+	Parameter("GlassFull_RYT:1", "Glass_Width") = decGlassOpening / NoOfPanelsRYT - GlassGap
+	Panel_SpacingRYT = decGlassOpening / NoOfPanelsRYT
+	Dim rectPattern = Patterns.AddRectangular("RytGlassPattern", "Right Double Glass Full", NoOfPanelsRYT, Panel_SpacingRYT, Nothing, "X Axis", columnNaturalDirection := False, rowCount := 1, rowOffset := 1.0 in, rowEntityName := "Y Axis", rowNaturalDirection := True)
+	
+	Parameter("Double Door Center Assymetric Wireframe:1", "intMULL_RYT") = Panel_SpacingRYT 'position of 1st intermediate mullion
+End Sub
+Sub GlassGeneration()
+	Glass_Opening_LFT = Left_Opening_Width - (1.4772 + 0.9772) -1 / 8
+	Glass_Opening_RYT = Ryt_Opening_Width - (1.4772 + 0.9772) -1 / 8
+	Select Case Door_Pos
+		
+		Case "Center"
+				'***********Left SIDE GLASS***************
+			If Glass_Opening_LFT <= MaxGlassWidth Then
+				SingleGlassFull_LFT()
+			Else If Glass_Opening_LFT > MaxGlassWidth Then
+				MultipleGlassFull_LFT()
+			End If
+			
+				'***********RIGHT SIDE GLASS***************
+			If Glass_Opening_RYT <= MaxGlassWidth Then
+				SingleGlassFull_RYT()
+			Else If Glass_Opening_RYT > MaxGlassWidth Then
+				MultipleGlassFull_RYT()
+			End If
+			
+		Case "Left"
+			Patterns.Delete("LeftGlassPattern")
+			Component.IsActive("Left Double Glass Full") = False
+				'***********RIGHT SIDE GLASS***************
+			If Glass_Opening_RYT <= MaxGlassWidth Then
+				SingleGlassFull_RYT()
+			Else If Glass_Opening_RYT > MaxGlassWidth Then
+				MultipleGlassFull_RYT()
+			End If
+			
+		Case "Right"
+			Patterns.Delete("RytGlassPattern")
+			Component.IsActive("Right Double Glass Full") = False
+				'***********RIGHT SIDE GLASS***************
+			If Glass_Opening_LFT <= MaxGlassWidth Then
+				SingleGlassFull_LFT()
+			Else If Glass_Opening_LFT > MaxGlassWidth Then
+				MultipleGlassFull_LFT()
+			End If
+		End Select
+	End Sub
+	
